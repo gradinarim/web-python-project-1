@@ -1,4 +1,5 @@
 import os
+import configparser
 
 from flask import Flask, session
 from flask_session import Session
@@ -7,7 +8,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import requests
 
-KEY = 'sNCOptBp6eHn0ZZKdJ9Q'
+config = configparser.ConfigParser()
+config.read('config.cfg')
+GOODREADS_KEY = config['Goodreadnes']['key']
 
 app = Flask(__name__)
 
@@ -27,5 +30,5 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
-    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": "9781632168146"})
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": GOODREADS_KEY, "isbns": "9781632168146"})
     return str(res.json())
