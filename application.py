@@ -60,6 +60,27 @@ def book(book_id):
     top_books.append(Book(3, '1416949658', 'The Dark Is Rising', 'Susan Cooper', '1973'))
     return render_template('index.html', top_books=top_books)
     
+@app.route("/registration", methods=['GET', 'POST'])
+def registration():
+    
+    if request.method == 'GET':
+        return render_template('registration.html')
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username and password:
+            db.execute('''
+                INSERT INTO users (username, password) VALUES (:username, :password)''',
+                {'username': username, 'password': password}
+            )
+            db.commit()
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            # TODO: Show the error
+            return redirect(url_for('registration'))
+    
 @app.route("/login", methods=['GET', 'POST'])
 def login():
 
@@ -70,9 +91,18 @@ def login():
     
         username = request.form.get("username")
         password = request.form.get("password")
-        id = 1
     
-        if username == 'admin' and password == 'admin':
+        user_db = db.execute('''
+            SELECT * FROM users WHERE username = :username;
+        ''', {'username': username})
+        
+        if user_db.rowcount == 0:
+            # TODO: Error message
+            return redirect(url_for('login'))
+        
+        user = user_db.fetchone()
+    
+        if username == user.username and password == user.password:
             session['username'] = username
         
         return redirect(url_for('index'))
