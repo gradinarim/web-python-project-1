@@ -5,6 +5,14 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     </head>
     <body>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <input type="text" value="Search">
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <p>{{ username }}</p>
+        </nav>
+    
         {% block body %}
         {% endblock %}
     </body>
