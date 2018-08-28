@@ -8,10 +8,13 @@
         <nav>
             <a href="{{ url_for('index') }}">Home</a>
             <input type="text" value="Search">
-            <a href="{{ url_for('login') }}">Log In</a>
-            <a href="{{ url_for('logout') }}">Log Out</a>
-            <a href="{{ url_for('registration') }}">Sign Up</a>
-            <p>{{ username }}</p>
+            {% if username %}
+                Hello, {{ username }}
+                <a href="{{ url_for('logout') }}">Log Out</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Log In</a>
+                <a href="{{ url_for('registration') }}">Sign Up</a>
+            {% endif %}
         </nav>
     
         {% block body %}
