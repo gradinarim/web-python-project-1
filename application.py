@@ -41,12 +41,12 @@ class Book:
 @app.route("/")
 def index():
 
-    # top_books = db.execute('''
-        # SELECT * FROM top_books;
-    # ''').fetchall()
-    top_books = []
-    top_books.append(Book(2, '0380795272', 'Krondor: The Betrayal', 'Raymond E. Feist', '1998'))
-    top_books.append(Book(3, '1416949658', 'The Dark Is Rising', 'Susan Cooper', '1973'))
+    # Get 20 top rated books for displaying on the main page
+    top_books = db.execute('''
+        SELECT * FROM books
+        ORDER BY rating DESC
+        LIMIT 20
+    ''').fetchall()
     
     username = session.get('username', None)
     
