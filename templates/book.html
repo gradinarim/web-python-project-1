@@ -15,4 +15,12 @@
             </form>
         {% endif %}
         
+        {% if reviews %}
+            {% for review in reviews %}
+                <h2>User: {{ review.user_id }}</h2>
+                Rate: {{ review.rating }}<br />
+                Review: {{ review.review }}
+            {% endfor %}
+        {% endif %}
+        
         {% endblock %}

@@ -49,6 +49,8 @@ def index():
 @app.route("/book/<int:book_id>")
 def book(book_id):
 
+    # TODO: Check book id
+
     book = db.execute('''
         SELECT * FROM books
         WHERE id = :id
@@ -92,7 +94,12 @@ def book(book_id):
         if user_review:
             is_reviewed = True
         
-    return render_template('book.html', book=book, user=user, is_reviewed=is_reviewed)
+    # Get reviews
+    reviews = db.execute('''
+        SELECT * FROM reviews WHERE book_id = :book_id
+    ''', {'book_id': book_id}).fetchall()
+        
+    return render_template('book.html', book=book, user=user, is_reviewed=is_reviewed, reviews=reviews)
     
     
 @app.route('/add_review', methods=['POST'])
@@ -114,7 +121,7 @@ def add_review():
     rating = int(rating)
     book = int(book)
     
-    # TODO: Check book id and refactor rating
+    # TODO: Check book id and re-factor rating
     
     db.execute('''
         INSERT INTO reviews (book_id, user_id, rating, review)
