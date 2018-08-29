@@ -40,9 +40,11 @@ def index():
         LIMIT 20
     ''').fetchall()
 
-    username = session.get('username', None)
+    # Get session for user
+    user = session.get('user', None)
     
-    return render_template('index.html', top_books=top_books, username=username)
+    return render_template('index.html', top_books=top_books, user=user)
+    
     
 @app.route("/book/<int:book_id>")
 def book(book_id):
@@ -78,15 +80,26 @@ def book(book_id):
     if not book:
         return render_template('error.html', message='We haven\'t this book')
 
-    username = session.get('username', None)
+    user = session.get('user', None)
+    
+    is_reviewed = False
+    if user:
+        user_review = db.execute('''
+            SELECT * FROM reviews
+            WHERE user_id = :user_id AND book_id = :book_id
+        ''', {'user_id': user['id'], 'book_id': book.id}).fetchone()
         
-    return render_template('book.html', book=book, username=username)
+        if user_review:
+            is_reviewed = True
+        
+    return render_template('book.html', book=book, user=user)
     
     
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
     
     if request.method == 'GET':
+        session.pop('user', None)
         return render_template('registration.html')
         
     if request.method == 'POST':
@@ -94,20 +107,30 @@ def registration():
         password = request.form.get('password')
         if username and password:
             db.execute('''
-                INSERT INTO users (username, password) VALUES (:username, :password)''',
-                {'username': username, 'password': password}
-            )
+                INSERT INTO users (username, password) VALUES (:username, :password)
+            ''', {'username': username, 'password': password})
             db.commit()
-            session['username'] = username
+            
+            # Get id of created user
+            user = db.execute('''
+                SELECT * FROM users WHERE username = :username
+            ''', {'username': username}).fetchone()
+            
+            # Write in session id and name of user
+            session['user'] = {'id': user.id, 'name': user.username}
+            
             return redirect(url_for('index'))
+            
         else:
             # TODO: Show the error
             return redirect(url_for('registration'))
+    
     
 @app.route("/login", methods=['GET', 'POST'])
 def login():
 
     if request.method == 'GET':
+        session.pop('user', None)
         return render_template('login.html')
 
     if request.method == 'POST':
@@ -115,23 +138,27 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
     
-        user_db = db.execute('''
-            SELECT * FROM users WHERE username = :username;
-        ''', {'username': username})
+        user = db.execute('''
+            SELECT * FROM users WHERE username = :username
+        ''', {'username': username}).fetchone()
         
-        if user_db.rowcount == 0:
+        if not user:
+            # TODO: Error message
+            return redirect(url_for('login'))
+    
+        if password == user.password:
+            session['user'] = {'id': user.id, 'name': user.username}
+        else:
             # TODO: Error message
             return redirect(url_for('login'))
         
-        user = user_db.fetchone()
-    
-        if username == user.username and password == user.password:
-            session['username'] = username
-        
         return redirect(url_for('index'))
+    
     
 @app.route("/logout", methods=['GET'])
 def logout():
-    session.pop('username', None)
+
+    session.pop('user', None)
     return redirect(url_for('index'))
+    
     

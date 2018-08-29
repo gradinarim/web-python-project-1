@@ -8,8 +8,8 @@
         <nav>
             <a href="{{ url_for('index') }}">Home</a>
             <input type="text" value="Search">
-            {% if username %}
-                Hello, {{ username }}
+            {% if user %}
+                Hello, {{ user['name'] }}
                 <a href="{{ url_for('logout') }}">Log Out</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Log In</a>
