@@ -1,4 +1,4 @@
-import os
+import sys
 import configparser
 
 from flask import Flask, session, render_template, request, redirect, url_for
@@ -47,7 +47,7 @@ def index():
         ORDER BY rating DESC
         LIMIT 20
     ''').fetchall()
-    
+
     username = session.get('username', None)
     
     return render_template('index.html', top_books=top_books, username=username)
@@ -60,10 +60,36 @@ def book(book_id):
         WHERE id = :id
     ''', {'id': book_id}).fetchone()
     
+    isbn = book.isbn
+    
+    # Get Goodreads rating
+    result = requests.get('https://www.goodreads.com/book/review_counts.json', params={'key': GOODREADS_KEY, 'isbns': isbn})
+    if result:
+        gr_rating = result.json()
+        gr_work_ratings_count = gr_rating['books'][0]['work_ratings_count']
+        gr_average_rating = float(gr_rating['books'][0]['average_rating'])
+    else:
+        gr_work_ratings_count = 0
+        gr_average_rating = 0
+    
+    if book.rating != gr_average_rating:
+        db.execute('''
+            UPDATE books SET rating = :rating WHERE id = :id
+        ''', {'rating': gr_average_rating, 'id': book.id})
+        db.commit()
+        
+        book = db.execute('''
+            SELECT * FROM books
+            WHERE id = :id
+        ''', {'id': book_id}).fetchone()
+    
     if not book:
-        return render_template('error.html', message='We haven''t this book')
+        return render_template('error.html', message='We haven\'t this book')
 
-    return render_template('book.html', book=book)
+    username = session.get('username', None)
+        
+    return render_template('book.html', book=book, username=username)
+    
     
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
@@ -117,7 +143,3 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('index'))
     
-    # res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": GOODREADS_KEY, "isbns": "9781632168146"})
-    # return str(res.json())
-    
-    # {'books': [{'id': 29207858, 'isbn': '1632168146', 'isbn13': '9781632168146', 'ratings_count': 0, 'reviews_count': 2, 'text_reviews_count': 0, 'work_ratings_count': 26, 'work_reviews_count': 114, 'work_text_reviews_count': 10, 'average_rating': '4.04'}]}
