@@ -55,10 +55,15 @@ def index():
 @app.route("/book/<int:book_id>")
 def book(book_id):
 
-    top_books = []
-    top_books.append(Book(2, '0380795272', 'Krondor: The Betrayal', 'Raymond E. Feist', '1998'))
-    top_books.append(Book(3, '1416949658', 'The Dark Is Rising', 'Susan Cooper', '1973'))
-    return render_template('index.html', top_books=top_books)
+    book = db.execute('''
+        SELECT * FROM books
+        WHERE id = :id
+    ''', {'id': book_id}).fetchone()
+    
+    if not book:
+        return render_template('error.html', message='We haven''t this book')
+
+    return render_template('book.html', book=book)
     
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():

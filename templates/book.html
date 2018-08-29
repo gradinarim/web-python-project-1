@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+        {% block body %}
+        <h2>{{ book.title }}</h2>
+        by {{ book.author }}<br />
+        {{ book.year }}<br />
+        isbn {{ book.isbn }}<br />
+        <h2>{{ book.rating }}</h2>
+        {% endblock %}
