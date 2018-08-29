@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+        {% block body %}
+            {% if books %}
+                {% for book in books %}
+                    <p>
+                        <h3>{{ book.title }}</h3>
+                        {{ book.author }}<br />
+                        {{ book.year }}<br />
+                        {{ book.isbn }}
+                    </p>
+                {% endfor %}
+            {% else %}
+                Not found
+            {% endif %}
+        {% endblock %}
