@@ -132,6 +132,26 @@ def add_review():
     # TODO: Redirect to the same page
     return redirect(url_for('index'))
     
+    
+@app.route('/search', methods=['POST'])
+def search():
+    
+    search = request.form.get('search')
+    
+    if not search:
+        return redirect(url_for('index'))
+    
+    books = db.execute('''
+        SELECT * FROM books 
+        WHERE isbn ILIKE :search
+        OR title ILIKE :search
+        OR author ILIKE :search
+        OR year ILIKE :search
+    ''', {'search': '%' + search + '%'}).fetchall()
+    
+    return render_template('search.html', books=books)
+    
+    
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
     
