@@ -29,14 +29,6 @@ Session(app)
 engine = create_engine(DATABASE_URL)
 db = scoped_session(sessionmaker(bind=engine))
 
-# Temporary class for books
-class Book:
-    def __init__(self, id, isbn, title, author, year):
-        self.id = id
-        self.isbn = isbn
-        self.title = title
-        self.author = author
-        self.year = year
 
 @app.route("/")
 def index():
