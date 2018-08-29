@@ -6,4 +6,13 @@
         {{ book.year }}<br />
         isbn {{ book.isbn }}<br />
         <h2>{{ book.rating }}</h2>
+        {% if not is_reviewed %}
+            <form action="{{ url_for('add_review') }}" method="POST">
+                <input type="text" name="rating"><br />
+                <textarea rows="10" cols="45" name="review"></textarea><br />
+                <input type="submit" value="Submit">
+                <input type="hidden" name="book" value="{{ book.id }}">
+            </form>
+        {% endif %}
+        
         {% endblock %}

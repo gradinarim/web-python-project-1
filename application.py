@@ -92,8 +92,38 @@ def book(book_id):
         if user_review:
             is_reviewed = True
         
-    return render_template('book.html', book=book, user=user)
+    return render_template('book.html', book=book, user=user, is_reviewed=is_reviewed)
     
+    
+@app.route('/add_review', methods=['POST'])
+def add_review():
+
+    user = session.get('user', None)
+    if not user:
+        # TODO: Redirect to the same page
+        return redirect(url_for('index'))
+    
+    rating = request.form.get('rating')
+    review = request.form.get('review')
+    book = request.form.get('book')
+    
+    if not rating or not review or not book:
+        # TODO: Redirect to the same page
+        return redirect(url_for('index'))
+    
+    rating = int(rating)
+    book = int(book)
+    
+    # TODO: Check book id and refactor rating
+    
+    db.execute('''
+        INSERT INTO reviews (book_id, user_id, rating, review)
+        VALUES (:book_id, :user_id, :rating, :review)
+    ''', {'book_id': book, 'user_id': user['id'], 'rating': rating, 'review': review})
+    db.commit()
+    
+    # TODO: Redirect to the same page
+    return redirect(url_for('index'))
     
 @app.route("/registration", methods=['GET', 'POST'])
 def registration():
