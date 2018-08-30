@@ -136,6 +136,8 @@ def add_review():
 @app.route('/search', methods=['POST'])
 def search():
     
+    user = session.get('user', None)
+    
     search = request.form.get('search')
     
     if not search:
@@ -149,7 +151,7 @@ def search():
         OR year ILIKE :search
     ''', {'search': '%' + search + '%'}).fetchall()
     
-    return render_template('search.html', books=books)
+    return render_template('search.html', books=books, user=user)
     
     
 @app.route("/registration", methods=['GET', 'POST'])
