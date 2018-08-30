@@ -165,6 +165,12 @@ def registration():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        confirm = request.form.get('confirm')
+        
+        if password != confirm:
+            # TODO: Error - confirmation failed
+            return redirect(url_for('registration'))
+        
         if username and password:
             # Check if user doesn't exist
             exists = db.execute('''
