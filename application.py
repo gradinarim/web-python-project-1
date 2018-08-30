@@ -1,5 +1,6 @@
 import sys
 import configparser
+import hashlib
 
 from flask import Flask, session, render_template, request, redirect, url_for
 from flask_session import Session
@@ -173,9 +174,11 @@ def registration():
                 # TODO: Error - user already exists
                 return redirect(url_for('registration'))
             
+            md5_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+            
             db.execute('''
                 INSERT INTO users (username, password) VALUES (:username, :password)
-            ''', {'username': username, 'password': password})
+            ''', {'username': username, 'password': md5_password})
             db.commit()
             
             # Get id of created user
@@ -213,7 +216,9 @@ def login():
             # TODO: Error message
             return redirect(url_for('login'))
     
-        if password == user.password:
+        md5_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+    
+        if md5_password == user.password:
             session['user'] = {'id': user.id, 'name': user.username}
         else:
             # TODO: Error message
