@@ -2,7 +2,7 @@ import sys
 import configparser
 import hashlib
 
-from flask import Flask, session, render_template, request, redirect, url_for
+from flask import Flask, session, render_template, request, redirect, url_for, jsonify, abort
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -239,4 +239,37 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
     
+    
+# API
+@app.route('/api/<isbn>', methods=['GET'])
+def api(isbn):
+    
+    book = db.execute('''
+        SELECT * FROM books WHERE isbn = :isbn
+    ''', {'isbn': isbn}).fetchone()
+    
+    if not book:
+        return abort(404)
+
+    # Get Goodreads review count and rating
+    result = requests.get('https://www.goodreads.com/book/review_counts.json', params={'key': GOODREADS_KEY, 'isbns': isbn})
+    if result:
+        gr_rating = result.json()
+        gr_work_ratings_count = gr_rating['books'][0]['work_ratings_count']
+        gr_average_rating = float(gr_rating['books'][0]['average_rating'])
+    else:
+        gr_work_ratings_count = 0
+        gr_average_rating = 0
+        
+    data = {
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "isbn": book.isbn,
+        "review_count": gr_work_ratings_count,
+        "average_score": gr_average_rating
+    }
+    
+    return jsonify(data)
+
     
