@@ -165,6 +165,14 @@ def registration():
         username = request.form.get('username')
         password = request.form.get('password')
         if username and password:
+            # Check if user doesn't exist
+            exists = db.execute('''
+                SELECT * FROM users WHERE username = :username
+            ''', {'username': username}).fetchone()
+            if exists:
+                # TODO: Error - user already exists
+                return redirect(url_for('registration'))
+            
             db.execute('''
                 INSERT INTO users (username, password) VALUES (:username, :password)
             ''', {'username': username, 'password': password})
